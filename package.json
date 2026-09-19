@@ -1,0 +1,35 @@
+{
+  "name": "tablero-colaborativo-websockets",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n SERVIDOR,CLIENTE -c blue,green \"tsx watch server/index.ts\" \"vite\"",
+    "build": "tsc -p server/tsconfig.json && tsc -b && vite build",
+    "start": "node dist-server/server/index.js",
+    "test": "vitest run",
+    "test:integration": "node scripts/verify-integration.mjs",
+    "check": "tsc -b && tsc -p server/tsconfig.json --noEmit && vitest run"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "express": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "socket.io": "latest",
+    "socket.io-client": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/express": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "concurrently": "latest",
+    "jsdom": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "vitest": "latest"
+  }
+}
