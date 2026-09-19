@@ -72,6 +72,16 @@ button { cursor: pointer; }
 .legend { position: absolute; bottom: 22px; right: 24px; display: flex; gap: 15px; color: #9095a6; font-size: 9px; text-transform: uppercase; letter-spacing: .7px; }
 .legend i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; }
 .legend .purple { background: #7c5cfc; }.legend .green { background: #20baa2; }
+.modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: #090c18aa; backdrop-filter: blur(5px); }
+.editor-modal { width: min(410px, calc(100vw - 36px)); padding: 28px; border-radius: 20px; background: #fff; box-shadow: 0 28px 80px #080b1866; display: grid; gap: 13px; }
+.editor-modal .eyebrow { margin: 0; color: #7659ef !important; }
+.editor-modal h2 { margin: 0 0 8px; font: 800 24px 'Manrope'; letter-spacing: -.7px; }
+.editor-modal label { color: #73798b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; }
+.editor-modal input { width: 100%; border: 1px solid #d9dce6; border-radius: 11px; padding: 13px 14px; outline: none; }
+.editor-modal input:focus { border-color: #7c5cfc; box-shadow: 0 0 0 3px #7c5cfc18; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 8px; }
+.modal-actions button { border: 0; border-radius: 10px; padding: 10px 15px; font-weight: 700; background: #f0f1f5; color: #666c7e; }
+.modal-actions button[type='submit'] { color: #fff; background: #6f50ee; }
 @media (max-width: 760px) {
   .welcome-shell { padding: 30px 20px; }
   .welcome-panel { grid-template-columns: 1fr; gap: 35px; }

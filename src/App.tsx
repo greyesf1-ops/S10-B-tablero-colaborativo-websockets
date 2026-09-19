@@ -12,6 +12,7 @@ import { applyRemoteOperation, blockCenter } from './board';
 type ClientSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 type Cursor = { participantId: string; x: number; y: number };
 type Tool = 'select' | 'block' | 'connect';
+type EditorState = { mode: 'create' | 'edit'; value: string; blockId?: string } | null;
 
 const emptyState: BoardState = { roomId: '', version: 0, blocks: [], connections: [], participants: [] };
 
@@ -29,6 +30,7 @@ export function App() {
   const [tool, setTool] = useState<Tool>('select');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [connectFrom, setConnectFrom] = useState<string | null>(null);
+  const [editor, setEditor] = useState<EditorState>(null);
   const [cursors, setCursors] = useState<Record<string, Cursor>>({});
   const socketRef = useRef<ClientSocket | null>(null);
   const boardRef = useRef<SVGSVGElement | null>(null);
@@ -155,21 +157,7 @@ export function App() {
   }
 
   function addBlock() {
-    const label = window.prompt('Etiqueta del bloque', `Bloque ${room.blocks.length + 1}`)?.trim();
-    if (!label) return;
-    send({
-      type: 'block:create',
-      block: {
-        id: crypto.randomUUID(),
-        x: 90 + (room.blocks.length % 4) * 190,
-        y: 90 + Math.floor(room.blocks.length / 4) * 130,
-        width: 160,
-        height: 76,
-        label,
-        color: self?.color ?? '#7C5CFC',
-      },
-    });
-    setTool('select');
+    setEditor({ mode: 'create', value: `Bloque ${room.blocks.length + 1}` });
   }
 
   function handleBlockClick(id: string) {
@@ -198,8 +186,32 @@ export function App() {
   function editSelected(id = selectedId) {
     const block = room.blocks.find((item) => item.id === id);
     if (!block) return;
-    const label = window.prompt('Nueva etiqueta', block.label)?.trim();
-    if (label && label !== block.label) send({ type: 'block:update', id: block.id, patch: { label } });
+    setEditor({ mode: 'edit', value: block.label, blockId: block.id });
+  }
+
+  function saveEditor(event: FormEvent) {
+    event.preventDefault();
+    if (!editor) return;
+    const label = editor.value.trim();
+    if (!label) return;
+    if (editor.mode === 'create') {
+      send({
+        type: 'block:create',
+        block: {
+          id: crypto.randomUUID(),
+          x: 90 + (room.blocks.length % 4) * 190,
+          y: 90 + Math.floor(room.blocks.length / 4) * 130,
+          width: 160,
+          height: 76,
+          label,
+          color: self?.color ?? '#7C5CFC',
+        },
+      });
+    } else if (editor.blockId) {
+      send({ type: 'block:update', id: editor.blockId, patch: { label } });
+    }
+    setEditor(null);
+    setTool('select');
   }
 
   function deleteSelected() {
@@ -317,6 +329,27 @@ export function App() {
         <div className="hint">{tool === 'connect' ? (connectFrom ? 'Ahora selecciona el destino' : 'Selecciona el bloque de origen') : message}</div>
         <div className="legend"><span><i className="purple" /> cambios en tiempo real</span><span><i className="green" /> estado sincronizado</span></div>
       </section>
+      {editor && (
+        <div className="modal-backdrop" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) setEditor(null); }}>
+          <form className="editor-modal" onSubmit={saveEditor}>
+            <p className="eyebrow">{editor.mode === 'create' ? 'NUEVO ELEMENTO' : 'EDITAR ELEMENTO'}</p>
+            <h2>{editor.mode === 'create' ? 'Crear bloque' : 'Cambiar etiqueta'}</h2>
+            <label htmlFor="block-label">Etiqueta</label>
+            <input
+              id="block-label"
+              autoFocus
+              maxLength={80}
+              value={editor.value}
+              onChange={(event) => setEditor({ ...editor, value: event.target.value })}
+              onKeyDown={(event) => { if (event.key === 'Escape') setEditor(null); }}
+            />
+            <div className="modal-actions">
+              <button type="button" onClick={() => setEditor(null)}>Cancelar</button>
+              <button type="submit">{editor.mode === 'create' ? 'Crear bloque' : 'Guardar cambios'}</button>
+            </div>
+          </form>
+        </div>
+      )}
     </main>
   );
 }
